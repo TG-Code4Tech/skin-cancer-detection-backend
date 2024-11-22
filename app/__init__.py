@@ -13,6 +13,6 @@ def create_app():
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(image_bp)
-    app.register_blueprint(analyze_skin_lesion_bp, url_prefix='/')
+    app.register_blueprint(analyze_skin_lesion_bp)
 
     return app
