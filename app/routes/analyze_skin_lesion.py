@@ -2,8 +2,8 @@ import os
 import shutil
 import numpy as np
 from flask import Blueprint, request, jsonify, current_app
-from tensorflow.keras.models import load_model
 from werkzeug.utils import secure_filename
+from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
 # --- Variablen --------------------------------------------------------------------------------------------------------
