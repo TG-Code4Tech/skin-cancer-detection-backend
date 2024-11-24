@@ -26,8 +26,11 @@ numpy==2.0.2
 opt_einsum==3.4.0
 optree==0.13.1
 packaging==24.2
+pillow==11.0.0
 protobuf==5.28.3
 Pygments==2.18.0
+PyMySQL==1.1.1
+python-dotenv==1.0.1
 requests==2.32.3
 rich==13.9.4
 six==1.16.0

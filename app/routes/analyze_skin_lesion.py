@@ -3,6 +3,8 @@ import shutil
 import numpy as np
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.utils import secure_filename
+from app import db
+from app.models.analysis import Analysis
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
@@ -51,6 +53,20 @@ def analyze_skin_lesion():
         prediction = model.predict(image)
         result = "malignant" if prediction[0][0] > 0.5 else "benign"
         confidence_score = float(prediction[0][0])
+
+        # Analyse in Datenbank speichern
+        user_id = 1  # TODO: Das muss später über den Request übergeben werden --> SCD-20
+        image_id = 1  # TODO: Das muss später über den Request übergeben werden --> SCD-18
+
+        analysis = Analysis(
+            result=result,
+            confidence_score=confidence_score,
+            user_id=user_id,
+            image_id=image_id
+        )
+
+        db.session.add(analysis)
+        db.session.commit()
 
         return jsonify({"prediction": result, "confidence": confidence_score})
     
