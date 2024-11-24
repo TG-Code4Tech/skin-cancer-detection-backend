@@ -1,10 +1,16 @@
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
     
     # Konfiguration
     app.config.from_object('config.Config')
+
+    # Datenbank mit Flask-App initialisieren
+    db.init_app(app)
     
     # Registriere Blueprints
     from .routes.auth_routes import auth_bp
