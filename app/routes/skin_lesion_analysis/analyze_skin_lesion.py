@@ -10,7 +10,7 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
 # --- Variablen --------------------------------------------------------------------------------------------------------
 analyze_skin_lesion_bp = Blueprint("analyze_skin_lesion", __name__)
-skin_cancer_detection_model_path = os.path.join(os.path.dirname(__file__), '../../model/skin_cancer_detection_model.keras')
+skin_cancer_detection_model_path = os.path.join(os.path.dirname(__file__), "../../../model/skin_cancer_detection_model.keras")
 model = load_model(skin_cancer_detection_model_path)
 
 # --- Hilfsfunktionen --------------------------------------------------------------------------------------------------

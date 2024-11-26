@@ -143,7 +143,7 @@ Der Endpunkt gibt alle Analysen zu einer Benutzer-ID zurück.
 
 #### Anfrageparameter
 
-- `user_id`: Die ID des Benutzers, für den die Analysen abgerufen werden sollen.
+- **`user_id`**: Die ID des Benutzers, für den die Analysen abgerufen werden sollen.
 
 ##### Beispielanfrage (lokal):
 
@@ -206,3 +206,169 @@ Wenn keine Analysen für die angegebene Benutzer-ID gefunden werden:
 2. **Überprüfung des Parameters**: Die Anfrage wird dahingehend überprüft, ob eine Benutzer-ID bereitgestellt wurde.
 3. **Abruf der Analysen**: Es wird in der Datenbanktabelle `analyses` nach allen Analysen gesucht, die mit der angegebenen Benutzer-ID verknüpft sind.
 4. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die eine Liste von allen Analysen gefundenen Analysen enthält. Wenn keine Analysen gefunden werden, wird eine Fehlermeldung zurückgegeben.
+
+### Endpunkt: `/register`
+
+#### Beschreibung
+
+Der Endpunkt ermöglicht die Registrierung eines neuen Benutzers. Dieser muss ein Formular mit den erforderlichen Informationen ausfüllen und die API überprüft, ob der Benutzername und die E-Mail-Adresse verfügbar sind. Falls diese bereits existieren, wird eine Fehlermeldung zurückgegeben. Bei erfolgreicher Registrierung wird der Benutzer in der Datenbank gespeichert und eine Bestätigung wird zurückgegeben.
+
+#### HTTP-Methode
+
+- `POST`
+
+#### Anfrageparameter
+
+- **`username`** (Pflichtfeld): Der Benutzername des neuen Benutzers.
+- **`email`** (Pflichtfeld): Die E-Mail-Adresse des neuen Benutzers.
+- **`password`** (Pflichtfeld): Das Passwort des neuen Benutzers.
+- **`first_name`** (Pflichtfeld): Der Vorname des neuen Benutzers.
+- **`last_name`** (Pflichtfeld): Der Nachname des neuen Benutzers.
+
+##### Beispielanfrage (lokal):
+
+```bash
+curl -X POST -F "username=maxmustermann" -F "email=max.mustermann@mail.de" -F "password=sicheresPasswort" -F "first_name=Max" -F "last_name=Mustermann" http://localhost:5000/register
+```
+
+#### Antwort
+
+Die API gibt eine JSON-Antwort zurück, die eine Bestätigung der erfolgreichen Registrierung und die Details des neuen Benutzers enthält.
+
+##### Erfolgreiche Antwort:
+
+```json
+{
+  "message": "Benutzer wurde erfolgreich registriert.",
+  "user_id": 1,
+  "username": "maxmustermann",
+  "email": "max.mustermann@mail.de",
+  "first_name": "Max",
+  "last_name": "Mustermann"
+}
+```
+
+- **`message`**: Eine Bestätigung, dass der Benutzer erfolgreich registriert wurde.
+- **`user_id`**: Die ID des neu erstellten Benutzers.
+- **`username`**: Der Benutzername des registrierten Benutzers.
+- **`email`**: Die E-Mail-Adresse des registrierten Benutzers.
+- **`first_name`**: Der Vorname des registrierten Benutzers.
+- **`last_name`**: Der Nachname des registrierten Benutzers.
+
+##### Fehlerantwort:
+
+Falls eine erforderliche Benutzereingabe fehlt:
+
+```json
+{
+  "error": "Bitte alle erforderlichen Felder ausfüllen."
+}
+```
+
+Falls bereits ein Benutzer mit dem angegebenen Benutzernamen existiert:
+
+```json
+{
+  "error": "Benutzername bereits vergeben."
+}
+```
+
+Falls bereits ein Benutzer mit der angegebenen E-Mail-Adresse existiert:
+
+```json
+{
+  "error": "E-Mail-Adresse bereits vergeben."
+}
+```
+
+#### Funktionsweise
+
+1. **Anfrage mit Benutzer-ID**: Der Benutzer sendet eine POST-Anfrage an den Endpunkt `/register` mit den Parametern `username`, `email`, `password`, `first_name` und `last_name`.
+2. **Überprüfung der Parameter**: Die Anfrage wird dahingehend überprüft, ob alle erforderlichen Benutzereingaben vorhanden sind.
+3. **Existenzprüfung des Benutzernamens und der E-Mail-Adresse**: Es wird überprüft, ob bereits ein Benutzer mit dem angegebenen Benutzernamen oder der E-Mail-Adresse existiert.
+4. **Passwort-Hashing**: Das Passwort wird sicher mit dem pbkdf2:sha256-Hashing-Verfahren gehasht, bevor es in der Datenbank gespeichert wird.
+5. **Benutzererstellung**: Ein neuer Benutzer wird in der Datenbanktabelle `users` angelegt.
+6. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die bei einer erfolgreichen Registrierung eine Bestätigung und die Benutzerdaten enthält.
+
+### Endpunkt: `/login`
+
+#### Beschreibung
+
+Der Endpunkt ermöglicht es einem registrierten Benutzer, sich in der Anwendung anzumelden. Der Benutzer muss seinen Benutzernamen oder seine E-Mail-Adresse und sein Passwort eingeben. Die API überprüft die Anmeldedaten und erstellt bei erfolgreicher Authentifizierung ein JWT (JSON Web Token), das zur Autorisierung zukünftiger Anfragen verwendet wird.
+
+#### HTTP-Methode
+
+- `POST`
+
+#### Anfrageparameter
+
+- **`username_or_email`** (Pflichtfeld): Der Benutzername oder die E-Mail-Adresse des Benutzers.
+- **`password`** (Pflichtfeld): Das Passwort des Benutzers.
+
+##### Beispielanfrage (lokal):
+
+```bash
+curl -X POST -F "username_or_email=maxmustermann" -F "password=sicheresPasswort" http://localhost:5000/login
+```
+
+#### Antwort
+
+Die API gibt eine JSON-Antwort zurück, die eine Bestätigung der erfolgreichen Anmeldung sowie das JWT-Token und die Benutzerdaten enthält. Das JWT wird zusätzlich als HttpOnly-Cookie gesetzt.
+
+##### Erfolgreiche Antwort:
+
+```json
+{
+  "message": "Erfolgreich angemeldet.",
+  "jwt_access_token": "JWT_ACCESS_TOKEN",
+  "user_id": 1,
+  "username": "maxmustermann",
+  "email": "max.mustermann@mail.de",
+  "first_name": "Max",
+  "last_name": "Mustermann"
+}
+```
+
+- **`message`**: Eine Bestätigung, dass der Benutzer erfolgreich angemeldet wurde.
+- **`jwt_access_token`**: Das JWT-Token, das zur Autorisierung zukünftiger Anfragen verwendet wird.
+- **`user_id`**: Die ID des angemeldeten Benutzers.
+- **`username`**: Der Benutzername des angemeldeten Benutzers.
+- **`email`**: Die E-Mail-Adresse des angemeldeten Benutzers.
+- **`first_name`**: Der Vorname des angemeldeten Benutzers.
+- **`last_name`**: Der Nachname des angemeldeten Benutzers.
+
+##### Fehlerantwort:
+
+Falls eine erforderliche Benutzereingabe fehlt:
+
+```json
+{
+  "error": "Bitte alle erforderlichen Felder ausfüllen."
+}
+```
+
+Falls der Benutzername oder die E-Mail-Adresse ungültig ist:
+
+```json
+{
+  "error": "Benutzername oder E-Mail-Adresse ist ungültig."
+}
+```
+
+Falls das Passwort falsch ist:
+
+```json
+{
+  "error": "Falsches Passwort."
+}
+```
+
+#### Funktionsweise
+
+1. **Anfrage mit Benutzer-ID**: Der Benutzer sendet eine POST-Anfrage an den Endpunkt `/login` mit den Parametern `username_or_email` und `password`.
+2. **Überprüfung der Parameter**: Die Anfrage wird dahingehend überprüft, ob alle erforderlichen Benutzereingaben vorhanden sind.
+3. **Benutzersuche**: Es wird in der Datenbanktabelle `users` nach einem Benutzer mit dem angegebenen Benutzernamen oder E-Mail-Adresse gesucht.
+4. **Passwortüberprüfung**: Wenn ein Benutzer gefunden wurde, wird geprüft ob das angegebene Passwort mit dem gespeichterten Passwort übereinstimmt.
+5. **JWT-Erstellung**: Bei erfolgreicher Authentifizierung wird ein JWT-Token erstellt, das die Benutzer-ID als Identität enthält.
+6. **Setzen des HttpOnly-Cookies**: Das JWT-Token wird als HttpOnly-Cookie gesetzt, um die Sicherheit zu erhöhen.
+7. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die bei einer erfolgreichen Anmeldung eine Bestätigung, das JWT-Token und die Benutzerdaten enthält.
