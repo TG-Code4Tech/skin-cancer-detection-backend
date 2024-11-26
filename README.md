@@ -130,3 +130,79 @@ Wenn das Bild nicht bereitgestellt wird oder ein Fehler auftritt:
 4. **Speichern der Datei**: Das Bild wird sicher im entsprechenden Benutzerverzeichnis gespeichert.
 5. **Speichern des Pfads in der Datenbank**: Der Pfad des gespeicherten Bilds wird in der Datenbank mit der Benutzer-ID verknüpft.
 6. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die den Erfolg des Uploads bestätigt.
+
+### Endpunkt: `/get-all-analyses`
+
+#### Beschreibung
+
+Der Endpunkt gibt alle Analysen zu einer Benutzer-ID zurück.
+
+#### HTTP-Methode
+
+- `GET`
+
+#### Anfrageparameter
+
+- `user_id`: Die ID des Benutzers, für den die Analysen abgerufen werden sollen.
+
+##### Beispielanfrage (lokal):
+
+```bash
+curl -X GET "http://localhost:5000/get-all-analyses?user_id=1"
+```
+
+#### Antwort
+
+Die API gibt eine JSON-Antwort zurück, die eine Liste von Analysen enthält, die für den angegebenen Benutzer durchgeführt wurden. Jede Analyse enthält die Analyse-ID, das Ergebnis, den Konfidenzwert, die Benutzer-ID und die Bild-ID.
+
+##### Erfolgreiche Antwort:
+
+```json
+[
+  {
+    "analysis_id": 1,
+    "result": "benign",
+    "confidence_score": 0.85,
+    "user_id": 1,
+    "image_id": 10
+  },
+  {
+    "analysis_id": 2,
+    "result": "malignant",
+    "confidence_score": 0.91,
+    "user_id": 1,
+    "image_id": 11
+  }
+]
+```
+
+- **`analysis_id`**: Die eindeutige ID der Analyse.
+- **`result`**: Das Ergebnis der Analyse ("benign" oder "malignant").
+- **`confidence_score`**: Der Konfidenzwert (zwischen 0 und 1), der die Sicherheit des Modells bei der Klassifizierung angibt.
+- **`user_id`**: Die ID des Benutzers, der die Analyse angefordert hat.
+- **`image_id`**: Die ID des analyisierten Bilds.
+
+##### Fehlerantwort:
+
+Wenn die Benutzer-ID nicht bereitgestellt wird:
+
+```json
+{
+  "error": "Keine Benutzer-ID bereitgestellt."
+}
+```
+
+Wenn keine Analysen für die angegebene Benutzer-ID gefunden werden:
+
+```json
+{
+  "error": "Es wurden keine Analysen für diesen Benutzer gefunden."
+}
+```
+
+#### Funktionsweise
+
+1. **Anfrage mit Benutzer-ID**: Der Benutzer sendet eine GET-Anfrage an den Endpunkt `/get-all-analyses` mit der Benutzer ID als Parameter.
+2. **Überprüfung des Parameters**: Die Anfrage wird dahingehend überprüft, ob eine Benutzer-ID bereitgestellt wurde.
+3. **Abruf der Analysen**: Es wird in der Datenbanktabelle `analyses` nach allen Analysen gesucht, die mit der angegebenen Benutzer-ID verknüpft sind.
+4. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die eine Liste von allen Analysen gefundenen Analysen enthält. Wenn keine Analysen gefunden werden, wird eine Fehlermeldung zurückgegeben.

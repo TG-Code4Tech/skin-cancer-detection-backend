@@ -16,9 +16,11 @@ def create_app():
     from .routes.auth_routes import auth_bp
     from .routes.upload_skin_lesion import upload_skin_lesion_bp
     from .routes.analyze_skin_lesion import analyze_skin_lesion_bp
+    from .routes.get_all_analyses import get_all_analyses_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(upload_skin_lesion_bp)
     app.register_blueprint(analyze_skin_lesion_bp)
+    app.register_blueprint(get_all_analyses_bp)
 
     return app
