@@ -1,7 +1,9 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import JWTManager
 
 db = SQLAlchemy()
+jwt = JWTManager()
 
 def create_app():
     app = Flask(__name__)
@@ -11,14 +13,17 @@ def create_app():
 
     # Datenbank mit Flask-App initialisieren
     db.init_app(app)
+    jwt.init_app(app)
     
     # Registriere Blueprints
-    from .routes.auth_routes import auth_bp
-    from .routes.upload_skin_lesion import upload_skin_lesion_bp
-    from .routes.analyze_skin_lesion import analyze_skin_lesion_bp
-    from .routes.get_all_analyses import get_all_analyses_bp
+    from .routes.authentication.register import register_bp
+    from .routes.authentication.login import login_bp
+    from .routes.skin_lesion_analysis.upload_skin_lesion import upload_skin_lesion_bp
+    from .routes.skin_lesion_analysis.analyze_skin_lesion import analyze_skin_lesion_bp
+    from .routes.skin_lesion_analysis.get_all_analyses import get_all_analyses_bp
 
-    app.register_blueprint(auth_bp)
+    app.register_blueprint(register_bp)
+    app.register_blueprint(login_bp)
     app.register_blueprint(upload_skin_lesion_bp)
     app.register_blueprint(analyze_skin_lesion_bp)
     app.register_blueprint(get_all_analyses_bp)
