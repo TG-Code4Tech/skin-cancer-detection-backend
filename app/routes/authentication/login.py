@@ -25,7 +25,7 @@ def login():
         return jsonify({"error": "Falsches Passwort."}), 400
     
     # JWT erstellen
-    jwt_access_token = create_access_token(identity=user.user_id)
+    jwt_access_token = create_access_token(identity=str(user.user_id))
 
     response = make_response(jsonify({
         "message": "Erfolgreich angemeldet.",

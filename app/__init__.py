@@ -21,11 +21,13 @@ def create_app():
     from .routes.skin_lesion_analysis.upload_skin_lesion import upload_skin_lesion_bp
     from .routes.skin_lesion_analysis.analyze_skin_lesion import analyze_skin_lesion_bp
     from .routes.skin_lesion_analysis.get_all_analyses import get_all_analyses_bp
+    from .routes.account.delete import delete_account_bp
 
     app.register_blueprint(register_bp)
     app.register_blueprint(login_bp)
     app.register_blueprint(upload_skin_lesion_bp)
     app.register_blueprint(analyze_skin_lesion_bp)
     app.register_blueprint(get_all_analyses_bp)
+    app.register_blueprint(delete_account_bp)
 
     return app

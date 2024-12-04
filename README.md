@@ -372,3 +372,58 @@ Falls das Passwort falsch ist:
 5. **JWT-Erstellung**: Bei erfolgreicher Authentifizierung wird ein JWT-Token erstellt, das die Benutzer-ID als Identität enthält.
 6. **Setzen des HttpOnly-Cookies**: Das JWT-Token wird als HttpOnly-Cookie gesetzt, um die Sicherheit zu erhöhen.
 7. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die bei einer erfolgreichen Anmeldung eine Bestätigung, das JWT-Token und die Benutzerdaten enthält.
+
+### Endpunkt: `/delete-account`
+
+#### Beschreibung
+
+Der Endpunkt ermöglicht es einem authentifizierten Benuztzer seinen Account zu löschen. Es werden alle seine Benutzerdaten aus der Datenbank entfernt und das zugehörige JWT-Access-Token gelöscht.
+
+#### HTTP-Methode
+
+- `DELETE`
+
+#### Anfrageparameter
+
+Keine
+
+##### Beispielanfrage (lokal):
+
+```bash
+curl -X DELETE http://localhost:5000/delete-account -H "Authorization: Bearer <jwt_access_token>"
+```
+
+#### Antwort
+
+Die API gibt eine JSON-Antwort zurück, die eine Bestätigung enthält, wenn der Benutzer erfolgreich aus der Datenbank entfernt wurde.
+
+##### Erfolgreiche Antwort
+
+```json
+{
+  "message": "Account erfolgreich gelöscht."
+}
+```
+
+- **`message`**: Eine Bestätigung, dass der Benutzer erfolgreich gelöscht wurde.
+
+##### Fehlerantwort
+
+Wenn der Benutzer nicht gefunden wird:
+
+```json
+{
+  "error": "Es konnte kein Benutzer gefunden werden."
+}
+```
+
+- **`message`**: Eine Bestätigung, dass der Benutzer erfolgreich gelöscht wurde.
+
+#### Funktionsweise
+
+1. **Benutzeridentifikation**: Der Benutzer sendet eine DELETE-Anfrage an den Endpunkt `/delete-account` ohne Parameter. Die Anfrage muss aber ein gültigen JWT mitsenden.
+2. **Überprüfung des JWT**: Die Anfrage wird dahingehend überprüft, ob der Benutzer authentifiziert ist.
+3. **Benutzersuche**: Es wird in der Datenbanktabelle `users` nach einem Benutzer mit der `user_id`, die im JWT enthalten ist, gesucht.
+4. **Benutzer löschen**: Wenn ein Benutzer gefunden wurde, werden seine Daten aus der Datenbak entfernt.
+5. **JWT löschen**: Das zugehörige JWT-Token wird aus den Cookies entfernt.
+6. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die bei erfolgreicher Entfernung des Benutzers eine Bestätigungsmeldung enthält.
