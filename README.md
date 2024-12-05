@@ -417,13 +417,74 @@ Wenn der Benutzer nicht gefunden wird:
 }
 ```
 
-- **`message`**: Eine Bestätigung, dass der Benutzer erfolgreich gelöscht wurde.
-
 #### Funktionsweise
 
-1. **Benutzeridentifikation**: Der Benutzer sendet eine DELETE-Anfrage an den Endpunkt `/delete-account` ohne Parameter. Die Anfrage muss aber ein gültigen JWT mitsenden.
+1. **Benutzeridentifikation**: Der Benutzer sendet eine DELETE-Anfrage an den Endpunkt `/delete-account` ohne Parameter. Die Anfrage muss aber einen gültigen JWT mitsenden.
 2. **Überprüfung des JWT**: Die Anfrage wird dahingehend überprüft, ob der Benutzer authentifiziert ist.
 3. **Benutzersuche**: Es wird in der Datenbanktabelle `users` nach einem Benutzer mit der `user_id`, die im JWT enthalten ist, gesucht.
 4. **Benutzer löschen**: Wenn ein Benutzer gefunden wurde, werden seine Daten aus der Datenbak entfernt.
 5. **JWT löschen**: Das zugehörige JWT-Token wird aus den Cookies entfernt.
 6. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die bei erfolgreicher Entfernung des Benutzers eine Bestätigungsmeldung enthält.
+
+### Endpunkt: `/update-theme`
+
+#### Beschreibung
+
+Der Endpunkt ermöglicht es einem authentifizierten Benuztzer das Theme zu wechseln. Es kann zwischen einem hellen und einem dunklen Theme gewählt werden.
+
+#### HTTP-Methode
+
+- `PUT`
+
+#### Anfrageparameter
+
+- **`theme`** (Pflichtfeld): Das Theme welches der Benutzer ausgewählt hat (`light` oder `dark`)
+
+##### Beispielanfrage (lokal):
+
+```bash
+curl -X PUT http://localhost:5000/delete-account -H "Authorization: Bearer <jwt_access_token>" -F "theme=dark"
+```
+
+#### Antwort
+
+Die API gibt eine JSON-Antwort zurück, die bei erfolgreicher Änderung des Themes eine Bestätigung und den Wert des neuen Themes enthält.
+
+##### Erfolgreiche Antwort
+
+```json
+{
+  "message": "Theme wurde erfolgreich auf 'dark' gesetzt",
+  "theme": "dark"
+}
+```
+
+- **`message`**: Eine Bestätigung, dass das Theme erfolgreich geändert wurde.
+- **`theme`**: Das neue Theme.
+
+##### Fehlerantwort
+
+Wenn der Benutzer nicht gefunden wird:
+
+```json
+{
+  "error": "Es konnte kein Benutzer gefunden werden."
+}
+```
+
+Wenn ein ungültiger Wert übermittelt wird:
+
+```json
+{
+  "error": "Ungültiges Theme. Erlaubte Werte: 'light' oder 'dark'."
+}
+```
+
+#### Funktionsweise
+
+1. **Benutzeridentifikation**: Der Benutzer sendet eine PUT-Anfrage an den Endpunkt `/update-theme` mit dem Parameter `theme`. Die Anfrage muss einen gültigen JWT mitsenden.
+2. **Überprüfung des JWT**: Die Anfrage wird dahingehend überprüft, ob der Benutzer authentifiziert ist.
+3. **Benutzersuche**: Es wird in der Datenbanktabelle `users` nach einem Benutzer mit der `user_id`, die im JWT enthalten ist, gesucht.
+4. **Überprüfung des Themes**: Es wird überprüft, ob der übergebene Wert ein gültiger Wert ist (`light` oder `dark`).
+5. **Aktualisierung des Themes**: Wenn ein gültiges Theme angegeben wird, wird das Theme des Benutzers in der Datenbanktabelle `users` aktualisiert.
+6. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die bei erfolgreicher Aktualisierung des Themes eine Bestätigungsmeldung und das neue Theme enthält.
