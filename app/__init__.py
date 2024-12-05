@@ -25,6 +25,7 @@ def create_app():
     from .routes.account.update_theme import update_theme_bp
     from .routes.account.update_first_name import update_first_name_bp
     from .routes.account.update_last_name import update_last_name_bp
+    from .routes.account.update_username import update_username_bp
 
     app.register_blueprint(register_bp)
     app.register_blueprint(login_bp)
@@ -35,5 +36,6 @@ def create_app():
     app.register_blueprint(update_theme_bp)
     app.register_blueprint(update_first_name_bp)
     app.register_blueprint(update_last_name_bp)
+    app.register_blueprint(update_username_bp)
 
     return app

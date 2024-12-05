@@ -614,3 +614,74 @@ Wenn kein Nachname übermittelt wird:
 4. **Überprüfung des Nachnamens**: Es wird überprüft, ob ein Wert übergeben wurde.
 5. **Aktualisierung des Nachnamens**: Wenn ein Nachname übermittelt wurde, wird der Nachname des Benutzers in der Datenbanktabelle `users` aktualisiert.
 6. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die bei erfolgreicher Aktualisierung des Nachnamens eine Bestätigungsmeldung und den neuen Nachnamen enthält.
+
+### Endpunkt: `/update-username`
+
+#### Beschreibung
+
+Der Endpunkt ermöglicht es einem authentifizierten Benuztzer den Benutzernamen zu ändern.
+
+#### HTTP-Methode
+
+- `PUT`
+
+#### Anfrageparameter
+
+- **`username`** (Pflichtfeld): Der Benutzername, den der Benutzer angegeben hat
+
+##### Beispielanfrage (lokal):
+
+```bash
+curl -X PUT http://localhost:5000/delete-account -H "Authorization: Bearer <jwt_access_token>" -F "username=max_mustermann1"
+```
+
+#### Antwort
+
+Die API gibt eine JSON-Antwort zurück, die bei erfolgreicher Änderung des Benutzernamens eine Bestätigung und den neuen Benutzernamen enthält.
+
+##### Erfolgreiche Antwort
+
+```json
+{
+  "message": "Benutzername wurde erfolgreich zu 'max_mustermann1' geändert.",
+  "username": "max_mustermann1"
+}
+```
+
+- **`message`**: Eine Bestätigung, dass der Benutzername erfolgreich geändert wurde.
+- **`username`**: Der neue Benutzername.
+
+##### Fehlerantwort
+
+Wenn der Benutzer nicht gefunden wird:
+
+```json
+{
+  "error": "Es konnte kein Benutzer gefunden werden."
+}
+```
+
+Wenn kein Benutzername übermittelt wird:
+
+```json
+{
+  "error": "Kein Benutzername übermittelt."
+}
+```
+
+Wenn der Benutzername bereits vergeben ist:
+
+```json
+{
+  "error": "Benutzername bereits vergeben."
+}
+```
+
+#### Funktionsweise
+
+1. **Benutzeridentifikation**: Der Benutzer sendet eine PUT-Anfrage an den Endpunkt `/update-username` mit dem Parameter `username`. Die Anfrage muss einen gültigen JWT mitsenden.
+2. **Überprüfung des JWT**: Die Anfrage wird dahingehend überprüft, ob der Benutzer authentifiziert ist.
+3. **Benutzersuche**: Es wird in der Datenbanktabelle `users` nach einem Benutzer mit der `user_id`, die im JWT enthalten ist, gesucht.
+4. **Überprüfung des Benutzernamens**: Es wird überprüft, ob ein Benutzername übergeben wurde und ob bereits ein Benutzer mit dem Benutzernamen existiert.
+5. **Aktualisierung des Benutzernamens**: Wenn ein Benutzername übermittelt wurde und noch kein Benutzer mit diesem Benutzernamen existiert, wird der Benutzername des Benutzers in der Datenbanktabelle `users` aktualisiert.
+6. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die bei erfolgreicher Aktualisierung des Benutzernamens eine Bestätigungsmeldung und den neuen Benutzernamen enthält.
