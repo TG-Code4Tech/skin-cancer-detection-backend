@@ -454,7 +454,7 @@ Die API gibt eine JSON-Antwort zurück, die bei erfolgreicher Änderung des Them
 
 ```json
 {
-  "message": "Theme wurde erfolgreich auf 'dark' gesetzt",
+  "message": "Theme wurde erfolgreich auf 'dark' gesetzt.",
   "theme": "dark"
 }
 ```
@@ -488,3 +488,66 @@ Wenn ein ungültiger Wert übermittelt wird:
 4. **Überprüfung des Themes**: Es wird überprüft, ob der übergebene Wert ein gültiger Wert ist (`light` oder `dark`).
 5. **Aktualisierung des Themes**: Wenn ein gültiges Theme angegeben wird, wird das Theme des Benutzers in der Datenbanktabelle `users` aktualisiert.
 6. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die bei erfolgreicher Aktualisierung des Themes eine Bestätigungsmeldung und das neue Theme enthält.
+
+### Endpunkt: `/update-first-name`
+
+#### Beschreibung
+
+Der Endpunkt ermöglicht es einem authentifizierten Benuztzer den Vornamen zu ändern.
+
+#### HTTP-Methode
+
+- `PUT`
+
+#### Anfrageparameter
+
+- **`first_name`** (Pflichtfeld): Der Vorname, den der Benutzer angegeben hat
+
+##### Beispielanfrage (lokal):
+
+```bash
+curl -X PUT http://localhost:5000/delete-account -H "Authorization: Bearer <jwt_access_token>" -F "first_name=Moritz"
+```
+
+#### Antwort
+
+Die API gibt eine JSON-Antwort zurück, die bei erfolgreicher Änderung des Vornamens eine Bestätigung und den neuen Vornamen enthält.
+
+##### Erfolgreiche Antwort
+
+```json
+{
+  "message": "Vorname wurde erfolgreich zu 'Moritz' geändert.",
+  "first_name": "Moritz"
+}
+```
+
+- **`message`**: Eine Bestätigung, dass der Vorname erfolgreich geändert wurde.
+- **`first_name`**: Der neue Vorname.
+
+##### Fehlerantwort
+
+Wenn der Benutzer nicht gefunden wird:
+
+```json
+{
+  "error": "Es konnte kein Benutzer gefunden werden."
+}
+```
+
+Wenn kein Vorname übermittelt wird:
+
+```json
+{
+  "error": "Kein Vorname übermittelt."
+}
+```
+
+#### Funktionsweise
+
+1. **Benutzeridentifikation**: Der Benutzer sendet eine PUT-Anfrage an den Endpunkt `/update-first-name` mit dem Parameter `first_name`. Die Anfrage muss einen gültigen JWT mitsenden.
+2. **Überprüfung des JWT**: Die Anfrage wird dahingehend überprüft, ob der Benutzer authentifiziert ist.
+3. **Benutzersuche**: Es wird in der Datenbanktabelle `users` nach einem Benutzer mit der `user_id`, die im JWT enthalten ist, gesucht.
+4. **Überprüfung des Vornamens**: Es wird überprüft, ob ein Wert übergeben wurde.
+5. **Aktualisierung des Vornamens**: Wenn ein Vorname übermittelt wurde, wird der Vorname des Benutzers in der Datenbanktabelle `users` aktualisiert.
+6. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die bei erfolgreicher Aktualisierung des Vornamens eine Bestätigungsmeldung und den neuen Vornamen enthält.

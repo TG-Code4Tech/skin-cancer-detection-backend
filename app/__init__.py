@@ -23,6 +23,7 @@ def create_app():
     from .routes.skin_lesion_analysis.get_all_analyses import get_all_analyses_bp
     from .routes.account.delete import delete_account_bp
     from .routes.account.update_theme import update_theme_bp
+    from .routes.account.update_first_name import update_first_name_bp
 
     app.register_blueprint(register_bp)
     app.register_blueprint(login_bp)
@@ -31,5 +32,6 @@ def create_app():
     app.register_blueprint(get_all_analyses_bp)
     app.register_blueprint(delete_account_bp)
     app.register_blueprint(update_theme_bp)
+    app.register_blueprint(update_first_name_bp)
 
     return app
