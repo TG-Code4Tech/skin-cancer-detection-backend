@@ -90,7 +90,7 @@ Der Endpunkt akzeptiert ein Bild einer Hautläsion im POST-Format, speichert es 
 ##### Beispielanfrage (lokal):
 
 ```bash
-curl -X POST -F "skin-lesion-image=@/path/to/skin_lesion.jpg" http://localhost:5000/analyze-skin-lesion
+curl -X POST -F "skin-lesion-image=@/path/to/skin_lesion.jpg" http://localhost:5000/upload-skin-lesion
 ```
 
 #### Antwort
@@ -443,7 +443,7 @@ Der Endpunkt ermöglicht es einem authentifizierten Benuztzer das Theme zu wechs
 ##### Beispielanfrage (lokal):
 
 ```bash
-curl -X PUT http://localhost:5000/delete-account -H "Authorization: Bearer <jwt_access_token>" -F "theme=dark"
+curl -X PUT http://localhost:5000/update-theme -H "Authorization: Bearer <jwt_access_token>" -F "theme=dark"
 ```
 
 #### Antwort
@@ -506,7 +506,7 @@ Der Endpunkt ermöglicht es einem authentifizierten Benuztzer den Vornamen zu ä
 ##### Beispielanfrage (lokal):
 
 ```bash
-curl -X PUT http://localhost:5000/delete-account -H "Authorization: Bearer <jwt_access_token>" -F "first_name=Moritz"
+curl -X PUT http://localhost:5000/update-first-name -H "Authorization: Bearer <jwt_access_token>" -F "first_name=Moritz"
 ```
 
 #### Antwort
@@ -569,7 +569,7 @@ Der Endpunkt ermöglicht es einem authentifizierten Benuztzer den Nachnamen zu �
 ##### Beispielanfrage (lokal):
 
 ```bash
-curl -X PUT http://localhost:5000/delete-account -H "Authorization: Bearer <jwt_access_token>" -F "last_name=Testermann"
+curl -X PUT http://localhost:5000/update-last-name -H "Authorization: Bearer <jwt_access_token>" -F "last_name=Testermann"
 ```
 
 #### Antwort
@@ -632,7 +632,7 @@ Der Endpunkt ermöglicht es einem authentifizierten Benuztzer den Benutzernamen 
 ##### Beispielanfrage (lokal):
 
 ```bash
-curl -X PUT http://localhost:5000/delete-account -H "Authorization: Bearer <jwt_access_token>" -F "username=max_mustermann1"
+curl -X PUT http://localhost:5000/update-username -H "Authorization: Bearer <jwt_access_token>" -F "username=max_mustermann1"
 ```
 
 #### Antwort
@@ -685,3 +685,74 @@ Wenn der Benutzername bereits vergeben ist:
 4. **Überprüfung des Benutzernamens**: Es wird überprüft, ob ein Benutzername übergeben wurde und ob bereits ein Benutzer mit dem Benutzernamen existiert.
 5. **Aktualisierung des Benutzernamens**: Wenn ein Benutzername übermittelt wurde und noch kein Benutzer mit diesem Benutzernamen existiert, wird der Benutzername des Benutzers in der Datenbanktabelle `users` aktualisiert.
 6. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die bei erfolgreicher Aktualisierung des Benutzernamens eine Bestätigungsmeldung und den neuen Benutzernamen enthält.
+
+### Endpunkt: `/update-email`
+
+#### Beschreibung
+
+Der Endpunkt ermöglicht es einem authentifizierten Benuztzer die E-Mail-Adresse zu ändern.
+
+#### HTTP-Methode
+
+- `PUT`
+
+#### Anfrageparameter
+
+- **`email`** (Pflichtfeld): Die E-Mail-Adresse, die der Benutzer angegeben hat
+
+##### Beispielanfrage (lokal):
+
+```bash
+curl -X PUT http://localhost:5000/update-email -H "Authorization: Bearer <jwt_access_token>" -F "email=max.mustermann@email.de"
+```
+
+#### Antwort
+
+Die API gibt eine JSON-Antwort zurück, die bei erfolgreicher Änderung der E-Mail-Adresse eine Bestätigung und die neue E-Mail-Adresse enthält.
+
+##### Erfolgreiche Antwort
+
+```json
+{
+  "message": "E-Mail-Adresse wurde erfolgreich zu 'max.mustermann@email.de' geändert.",
+  "email": "max.mustermann@email.de"
+}
+```
+
+- **`message`**: Eine Bestätigung, dass die E-Mail-Adresse erfolgreich geändert wurde.
+- **`email`**: Die neue E-Mail-Adresse.
+
+##### Fehlerantwort
+
+Wenn der Benutzer nicht gefunden wird:
+
+```json
+{
+  "error": "Es konnte kein Benutzer gefunden werden."
+}
+```
+
+Wenn keine E-Mail-Adresse übermittelt wird:
+
+```json
+{
+  "error": "Keine E-Mail-Adresse übermittelt."
+}
+```
+
+Wenn die E-Mail-Adresse bereits vergeben ist:
+
+```json
+{
+  "error": "E-Mail-Adresse bereits vergeben."
+}
+```
+
+#### Funktionsweise
+
+1. **Benutzeridentifikation**: Der Benutzer sendet eine PUT-Anfrage an den Endpunkt `/update-email` mit dem Parameter `email`. Die Anfrage muss einen gültigen JWT mitsenden.
+2. **Überprüfung des JWT**: Die Anfrage wird dahingehend überprüft, ob der Benutzer authentifiziert ist.
+3. **Benutzersuche**: Es wird in der Datenbanktabelle `users` nach einem Benutzer mit der `user_id`, die im JWT enthalten ist, gesucht.
+4. **Überprüfung der E-Mail-Adresse**: Es wird überprüft, ob eine E-Mail-Adresse übergeben wurde und ob bereits ein Benutzer mit dieser E-Mail-Adresse existiert.
+5. **Aktualisierung der E-Mail-Adresse**: Wenn eine E-Mail-Adresse übermittelt wurde und noch kein Benutzer mit dieser E-Mail-Adresse existiert, wird die E-Mail-Adresse des Benutzers in der Datenbanktabelle `users` aktualisiert.
+6. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die bei erfolgreicher Aktualisierung der E-Mail-Adresse eine Bestätigungsmeldung und die neue E-Mail-Adresse enthält.
