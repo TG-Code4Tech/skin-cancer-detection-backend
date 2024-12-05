@@ -756,3 +756,73 @@ Wenn die E-Mail-Adresse bereits vergeben ist:
 4. **Überprüfung der E-Mail-Adresse**: Es wird überprüft, ob eine E-Mail-Adresse übergeben wurde und ob bereits ein Benutzer mit dieser E-Mail-Adresse existiert.
 5. **Aktualisierung der E-Mail-Adresse**: Wenn eine E-Mail-Adresse übermittelt wurde und noch kein Benutzer mit dieser E-Mail-Adresse existiert, wird die E-Mail-Adresse des Benutzers in der Datenbanktabelle `users` aktualisiert.
 6. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die bei erfolgreicher Aktualisierung der E-Mail-Adresse eine Bestätigungsmeldung und die neue E-Mail-Adresse enthält.
+
+### Endpunkt: `/update-password`
+
+#### Beschreibung
+
+Der Endpunkt ermöglicht es einem authentifizierten Benuztzer das Passwort zu ändern.
+
+#### HTTP-Methode
+
+- `PUT`
+
+#### Anfrageparameter
+
+- **`password`** (Pflichtfeld): Das Passwort, das der Benutzer angegeben hat
+
+##### Beispielanfrage (lokal):
+
+```bash
+curl -X PUT http://localhost:5000/update-password -H "Authorization: Bearer <jwt_access_token>" -F "password=new_password123!"
+```
+
+#### Antwort
+
+Die API gibt eine JSON-Antwort zurück, die die erfolgreiche Änderung des Passworts bestätigt.
+
+##### Erfolgreiche Antwort
+
+```json
+{
+  "message": "Passwort wurde erfolgreich geändert."
+}
+```
+
+- **`message`**: Eine Bestätigung, dass das Passwort erfolgreich geändert wurde.
+
+##### Fehlerantwort
+
+Wenn der Benutzer nicht gefunden wird:
+
+```json
+{
+  "error": "Es konnte kein Benutzer gefunden werden."
+}
+```
+
+Wenn kein Passwort übermittelt wird:
+
+```json
+{
+  "error": "Kein Passwort übermittelt."
+}
+```
+
+Wenn das neue Passwort mit dem alten Passwort übereinstimmt:
+
+```json
+{
+  "error": "Das neue Passwort darf nicht mit dem alten Passwort übereinstimmen."
+}
+```
+
+#### Funktionsweise
+
+1. **Benutzeridentifikation**: Der Benutzer sendet eine PUT-Anfrage an den Endpunkt `/update-password` mit dem Parameter `password`. Die Anfrage muss einen gültigen JWT mitsenden.
+2. **Überprüfung des JWT**: Die Anfrage wird dahingehend überprüft, ob der Benutzer authentifiziert ist.
+3. **Benutzersuche**: Es wird in der Datenbanktabelle `users` nach einem Benutzer mit der `user_id`, die im JWT enthalten ist, gesucht.
+4. **Überprüfung des Passworts**: Es wird überprüft, ob ein Passwort übergeben wurde und dass das neue Passwort nicht mit dem alten Passwort übereinstimmt.
+5. **Passwort-Hashing**: Das Passwort wird sicher mit dem pbkdf2:sha256-Hashing-Verfahren gehasht, bevor es in der Datenbank gespeichert wird.
+6. **Aktualisierung des Passworts**: Wenn ein Passwort übermittelt wurde, wird das Passwort des Benutzers in der Datenbanktabelle `users` aktualisiert.
+7. **Ergebnisse**: Die API gibt eine JSON-Antwort zurück, die die erfolgreiche Aktualisierung des Passworts bestätigt.
