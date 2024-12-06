@@ -16,11 +16,11 @@ def create_app():
     jwt.init_app(app)
     
     # Registriere Blueprints
-    from .routes.authentication.register import register_bp
     from .routes.authentication.login import login_bp
     from .routes.skin_lesion_analysis.upload_skin_lesion import upload_skin_lesion_bp
     from .routes.skin_lesion_analysis.analyze_skin_lesion import analyze_skin_lesion_bp
     from .routes.skin_lesion_analysis.get_all_analyses import get_all_analyses_bp
+    from .routes.account.register import register_bp
     from .routes.account.delete import delete_account_bp
     from .routes.account.update_theme import update_theme_bp
     from .routes.account.update_first_name import update_first_name_bp

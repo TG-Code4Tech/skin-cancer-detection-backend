@@ -1,45 +1,15 @@
-import os
-from app import db
-from app.models.image import Image
-from flask import Blueprint, request, jsonify
-from werkzeug.utils import secure_filename
+from flask import Blueprint, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from app.services.skin_cancer_detection_service import SkinCancerDetectionService
 
-# --- Variablen --------------------------------------------------------------------------------------------------------
 upload_skin_lesion_bp = Blueprint("upload_skin_lesion", __name__)
 
-# --- Hilfsfunktionen --------------------------------------------------------------------------------------------------
-def save_file_in_uploads_directory(file, user_id):
-    # Uploads Verzeichnis erstellen
-    uploads_directory = os.path.join(os.path.dirname(__file__), f"../../uploads/{user_id}")
-    os.makedirs(uploads_directory, exist_ok=True)
-
-    # Datei speichern
-    filename = secure_filename(file.filename)
-    uploads_path = os.path.join(uploads_directory, filename)
-    
-    file.save(uploads_path)
-
-    return os.path.join("uploads", str(user_id), filename)
-
-# --- Route ------------------------------------------------------------------------------------------------------------
 @upload_skin_lesion_bp.route("/upload-skin-lesion", methods=["POST"])
+@jwt_required()
 def upload_skin_lesion():
+    user_id = get_jwt_identity()
     file = request.files["skin-lesion-image"]
+    response = SkinCancerDetectionService.upload_skin_lesion(user_id, file)
 
-    if file is None or file.filename == "":
-        return jsonify({"error": "Keine Hautläsion bereitgestellt."})
+    return response
     
-    # Bildpfad in Datenbank speichern
-    user_id = 1  # TODO: Das muss später über den Request übergeben werden --> SCD-20
-
-    image_path = save_file_in_uploads_directory(file, user_id)
-
-    image = Image(
-        image=image_path,
-        user_id=user_id
-    )
-
-    db.session.add(image)
-    db.session.commit()
-
-    return jsonify({"message": "Das Bild wurde erfolgreich gespeichert."}), 201
