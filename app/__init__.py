@@ -12,8 +12,8 @@ def create_app():
     # Konfiguration
     app.config.from_object('config.Config')
 
-    # CORS für Frontendanfragen aktivieren
-    CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+    # CORS aktivieren
+    CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://localhost:3000"}})
 
     # Datenbank mit Flask-App initialisieren
     db.init_app(app)
