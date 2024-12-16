@@ -7,8 +7,14 @@ class AuthenticationService:
 
     @staticmethod
     def login_user(username_or_email, password):
-        if username_or_email is None or password is None:
-            return jsonify({"error": "Bitte alle erforderlichen Felder ausfüllen."}), 400
+        is_username_or_email_valid = AuthenticationService.validate_input(username_or_email)
+        is_password_valid = AuthenticationService.validate_input(password)
+
+        if not is_username_or_email_valid:
+            return jsonify({"error": "Bitte einen gültigen Benutzernamen oder eine gültige E-Mail-Adresse angeben."}), 400
+
+        if not is_password_valid:
+            return jsonify({"error": "Bitte ein gültiges Passwort angeben."}), 400
         
         # Prüfen, ob ein Benutzer mit dem Benutzernamen oder der E-Mail exisitiert
         user = User.query.filter((User.username == username_or_email) | (User.email == username_or_email)).first()
@@ -36,4 +42,11 @@ class AuthenticationService:
         response.set_cookie("jwt_access_token", jwt_access_token, httponly=True, secure=False, samesite="Strict")
 
         return response
+
+    @staticmethod
+    def validate_input(input):
+        if not input or not isinstance(input, str) or input.strip() == "":
+            return False
+        
+        return True
     

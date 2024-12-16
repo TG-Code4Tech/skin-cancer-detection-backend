@@ -1,3 +1,4 @@
+import re
 from app import db
 from flask import jsonify, make_response
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -28,20 +29,37 @@ class UserService:
     # --- Benutzer registrieren ----------------------------------------------------------------------------------------
     @staticmethod
     def register_user(username, email, password, first_name, last_name):
-        if username is None or email is None or password is None or first_name is None or last_name is None:
-            return jsonify({"error": "Bitte alle erforderlichen Felder ausfüllen."}), 400
+        is_username_valid = UserService.validate_input(username)
+        is_email_valid, email_validation_message = UserService.validate_email(email)
+        is_password_valid, password_validation_message = UserService.validate_password(password)
+        is_first_name_valid = UserService.validate_input(first_name)
+        is_last_name_valid = UserService.validate_input(last_name)
 
-        # Prüfen, ob bereits ein Benutzer mit dem Benutzernamen oder der E-Mail existiert
+        if not is_username_valid:
+            return jsonify({"error": "Bitte einen Benutzernamen angeben."}), 400
+
         username_already_exists = User.query.filter_by(username=username).first()
 
         if username_already_exists:
             return jsonify({"error": "Benutzername bereits vergeben."}), 400
         
+        if not is_email_valid:
+            return jsonify({"error": email_validation_message}), 400
+        
         email_already_exists = User.query.filter_by(email=email).first()
 
         if email_already_exists:
             return jsonify({"error": "Email-Adresse bereits vergeben."}), 400
-
+        
+        if not is_password_valid:
+            return jsonify({"error": password_validation_message}), 400
+        
+        if not is_first_name_valid:
+            return jsonify({"error": "Bitte einen Vornamen angeben."}), 400
+        
+        if not is_last_name_valid:
+            return jsonify({"error": "Bitte einen Nachnamen angeben."}), 400
+        
         # Passwort hashen
         hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
 
@@ -70,14 +88,14 @@ class UserService:
     @staticmethod
     def update_email(user_id, email):
         user = User.query.get(user_id)
+        is_email_valid, message = UserService.validate_email(email)
 
         if user is None:
             return jsonify({"error": "Es konnte kein Benutzer gefunden werden."}), 404
         
-        if email is None:
-            return jsonify({"error": "Keine E-Mail-Adresse übermittelt."}), 400
+        if not is_email_valid:
+            return jsonify({"error": message}), 400
         
-        # Prüfen, ob bereits ein Benutzer mit der E-Mail-Adresse existiert
         email_already_exists = User.query.filter_by(email=email).first()
 
         if email_already_exists:
@@ -95,11 +113,12 @@ class UserService:
     @staticmethod
     def update_first_name(user_id, first_name):
         user = User.query.get(user_id)
+        is_first_name_valid = UserService.validate_input(first_name)
 
         if user is None:
             return jsonify({"error": "Es konnte kein Benutzer gefunden werden."}), 404
         
-        if first_name is None:
+        if not is_first_name_valid:
             return jsonify({"error": "Kein Vorname übermittelt."}), 400
         
         user.first_name = first_name
@@ -114,11 +133,12 @@ class UserService:
     @staticmethod
     def update_last_name(user_id, last_name):
         user = User.query.get(user_id)
+        is_last_name_valid = UserService.validate_input(last_name)
 
         if user is None:
             return jsonify({"error": "Es konnte kein Benutzer gefunden werden."}), 404
         
-        if last_name is None:
+        if not is_last_name_valid:
             return jsonify({"error": "Kein Nachname übermittelt."}), 400
         
         user.last_name = last_name
@@ -133,12 +153,13 @@ class UserService:
     @staticmethod
     def update_password(user_id, password):
         user = User.query.get(user_id)
+        is_password_valid, message = UserService.validate_password(password)
 
         if user is None:
             return jsonify({"error": "Es konnte kein Benutzer gefunden werden."}), 404
         
-        if password is None:
-            return jsonify({"error": "Kein Passwort übermittelt."}), 400
+        if not is_password_valid:
+            return jsonify({"error": message}), 400
         
         # Prüfen, ob das neue Passwort mit dem aktuellen Passwort übereinstimmt
         if check_password_hash(user.password, password):
@@ -177,11 +198,12 @@ class UserService:
     @staticmethod
     def update_username(user_id, username):
         user = User.query.get(user_id)
+        is_username_valid = UserService.validate_input(username)
 
         if user is None:
             return jsonify({"error": "Es konnte kein Benutzer gefunden werden."}), 404
         
-        if username is None:
+        if not is_username_valid:
             return jsonify({"error": "Kein Benutzername übermittelt."}), 400
     
         # Prüfen, ob bereits ein Benutzer mit dem Benutzername existiert
@@ -197,4 +219,83 @@ class UserService:
             "message": f"Benutzername wurde erfolgreich zu '{username}' geändert.",
             "username": user.username
         }), 200
+    
+    # --- Auf leere Eingaben prüfen ------------------------------------------------------------------------------------
+    @staticmethod
+    def validate_input(input):
+        if not input or not isinstance(input, str) or input.strip() == "":
+            return False
+        
+        return True
+    
+    # --- Validierung der E-Mail-Adresse -------------------------------------------------------------------------------
+    @staticmethod
+    def validate_email(email):
+        is_valid = True
+        message = None
+        regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+        is_email_given = UserService.validate_input(email)
+        is_email_valid = bool(re.match(regex, email))
+
+        if not is_email_given or not is_email_valid:
+            is_valid = False
+            message = "Bitte eine gültige E-Mail-Adresse angeben."
+
+        return is_valid, message
+
+    # --- Validierung des Passworts ------------------------------------------------------------------------------------
+    @staticmethod
+    def validate_password(password):
+        is_valid = True
+        message = None
+
+        # Prüfen, ob ein (leeres) Passwort angegeben wurde
+        is_password_given = UserService.validate_input(password)
+        if not is_password_given:
+            is_valid = False
+            message = "Bitte ein gültiges Passwort angeben."
+
+            return is_valid, message
+        
+        # Prüfen, ob das Passwort aus mindestens 8 Zeichen besteht
+        if len(password) < 8:
+            is_valid = False
+            message = "Das Passwort muss aus mindestens 8 Zeichen bestehen."
+
+            return is_valid, message
+        
+        # Prüfen, ob das Passwort mindestens einen Großbuchtsaben enthält
+        if not re.search(r"[A-Z]", password):
+            is_valid = False
+            message = "Das Passwort muss mindestens einen Großbuchstaben enthalten."
+
+            return is_valid, message
+        
+        # Prüfen, ob das Passwort mindestens einen Kleinbuchstaben enthält
+        if not re.search(r"[a-z]", password):
+            is_valid = False
+            message = "Das Passwort muss mindestens einen Kleinbuchstaben enthalten."
+
+            return is_valid, message
+        
+        # Prüfen, ob das Passwort mindestens eine Zahl enthält
+        if not re.search(r"\d", password):
+            is_valid = False
+            message = "Das Passwort muss mindestens eine Zahl enthalten."
+
+            return is_valid, message
+        
+        # Prüfen, ob das Passwort mindestens eins der erlaubten Sonderzeichen enthält
+        if not re.search(r"[@$!%*?&#<>|_-]", password):
+            is_valid = False
+            message = "Das Passwort muss mindestens eines der folgenden Sonderzeichen enthalten: @$!%*?&#<>|_-."
+
+            return is_valid, message
+        
+        # Prüfen, ob das Passwort ein ungültiges Sonderzeichen enthält
+        if not re.search(r"^[a-zA-Z0-9@$!%*?&#<>|_-]*$", password):
+            is_valid = False
+            message = "Das Passwort darf nur die folgenden Sonderzeichen enthalten: @$!%*?&#<>|_-."
+        
+        return is_valid, message
     

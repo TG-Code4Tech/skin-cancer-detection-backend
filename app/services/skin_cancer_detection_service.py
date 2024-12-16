@@ -1,4 +1,5 @@
 import os
+import mimetypes
 from app import db
 from flask import jsonify
 from tensorflow.keras.models import load_model
@@ -15,7 +16,7 @@ class SkinCancerDetectionService:
 
     # --- Hautläsion analysieren ---------------------------------------------------------------------------------------
     def analyze_skin_lesion(self, file, user_id, image_id):
-        if file is None or file.filename == "":
+        if not file or file.filename == "":
             return jsonify({"error": "Keine Hautläsion bereitgestellt."})
     
         image_path, temp_directory = save_file_temporarily(file)
@@ -43,10 +44,13 @@ class SkinCancerDetectionService:
             remove_temp_directory(temp_directory)
 
     # --- Hautläsion hochladen -----------------------------------------------------------------------------------------
-    def upload_skin_lesion(user_id, file):
-        if file is None or file.filename == "":
-            return jsonify({"error": "Keine Hautläsion bereitgestellt."})
+    def upload_skin_lesion(self, user_id, file):
+        if not file or file.filename == "":
+            return jsonify({"error": "Keine Hautläsion bereitgestellt."}), 400
         
+        if not self.is_image(file):
+            return jsonify({"error": "Die hochgeladene Datei ist kein gültiges Bild."}), 400
+
         image_path = save_file_in_uploads_directory(file, user_id)
 
         image = Image(
@@ -58,3 +62,19 @@ class SkinCancerDetectionService:
         db.session.commit()
 
         return jsonify({"message": "Das Bild wurde erfolgreich gespeichert."}), 201
+
+    # --- Prüfen, ob die Datei ein Bild ist ----------------------------------------------------------------------------
+    def is_image(self, file):
+        mime_type, _= mimetypes.guess_type(file.filename)
+
+        if mime_type and mime_type.startswith("image"):
+            allowed_extensions = [".jpg", ".jpeg", ".png"]
+            _, ext = os.path.splitext(file.filename)
+
+            if ext.lower() not in allowed_extensions:
+                return False
+            
+            return True
+        
+        return False
+    
