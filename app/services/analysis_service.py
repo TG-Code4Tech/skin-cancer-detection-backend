@@ -27,3 +27,11 @@ class AnalysisService:
 
         return jsonify(analyses_list), 200
     
+    @staticmethod
+    def interpret_confidence(confidence_value):
+        if confidence_value < 0.5:
+            return 1 - confidence_value
+        elif confidence_value > 0.5:
+            return confidence_value
+        else:
+            return confidence_value
