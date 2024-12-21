@@ -1,7 +1,8 @@
 import os
 import mimetypes
 from app import db
-from flask import jsonify
+from app.services.analysis_service import AnalysisService
+from flask import jsonify, send_file
 from tensorflow.keras.models import load_model
 from app.models.analysis import Analysis
 from app.models.image import Image
@@ -38,7 +39,9 @@ class SkinCancerDetectionService:
             db.session.add(analysis)
             db.session.commit()
 
-            return jsonify({"prediction": result, "confidence": confidence_score})
+            interpreted_confidence_score = AnalysisService.interpret_confidence(confidence_score)
+
+            return jsonify({"prediction": result, "confidence": round(interpreted_confidence_score * 100) })
     
         finally:
             remove_temp_directory(temp_directory)
@@ -62,6 +65,34 @@ class SkinCancerDetectionService:
         db.session.commit()
 
         return jsonify({"message": "Das Bild wurde erfolgreich gespeichert.", "image_id": image.image_id}), 201
+    
+    # --- Hautläsion abrufen -----------------------------------------------------------------------------------------
+    def get_skin_lesion(self, user_id, image_id):
+        if not image_id:
+            return jsonify({"error": "Keine image_id übergeben."}), 400
+        
+        image = Image.query.filter_by(image_id=image_id).first()
+
+        if image is None:
+            return jsonify({"error": "Es konnte kein Bild mit dieser ID gefunden werden."}), 404
+        
+        if image.user_id != user_id:
+            return jsonify({"error": "Das Bild gehört nicht dem aktuellen Benutzer."}), 403
+
+        image_path = image.image
+
+        if not os.path.exists(image_path):
+            return jsonify({"error": "Das Bild konnte auf dem Server nicht gefunden werden."}), 404
+        
+        mime_type, _ = mimetypes.guess_type(image_path)
+
+        if not mime_type:
+            return jsonify({"error": "Der MIME-Type des Bildes konnte nicht bestimmt werden."}), 415
+
+        try: 
+            return send_file(image_path, mimetype=mime_type)
+        except Exception as e:
+                return jsonify({"error": f"Fehler beim Abrufen des Bildes: {str(e)}"}), 500
 
     # --- Prüfen, ob die Datei ein Bild ist ----------------------------------------------------------------------------
     def is_image(self, file):

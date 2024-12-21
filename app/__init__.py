@@ -33,6 +33,7 @@ def create_app():
     from .routes.account.update_email import update_email_bp
     from .routes.account.update_password import update_password_bp
     from .routes.account.get_user_data import get_user_data_bp
+    from .routes.skin_lesion_analysis.get_skin_lesion import get_skin_lesion_bp
 
     app.register_blueprint(register_bp)
     app.register_blueprint(login_bp)
@@ -47,5 +48,6 @@ def create_app():
     app.register_blueprint(update_email_bp)
     app.register_blueprint(update_password_bp)
     app.register_blueprint(get_user_data_bp)
+    app.register_blueprint(get_skin_lesion_bp)
 
     return app
