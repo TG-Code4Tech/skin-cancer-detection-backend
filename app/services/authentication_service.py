@@ -1,4 +1,4 @@
-from flask import jsonify, make_response
+from flask import jsonify
 from flask_jwt_extended import create_access_token
 from werkzeug.security import check_password_hash
 from app.models.user import User
@@ -29,7 +29,7 @@ class AuthenticationService:
         # JWT erstellen
         jwt_access_token = create_access_token(identity=str(user.user_id))
 
-        response = make_response(jsonify({
+        return jsonify({
             "message": "Erfolgreich angemeldet.",
             "jwt_access_token": jwt_access_token,
             "user_id": user.user_id,
@@ -37,11 +37,7 @@ class AuthenticationService:
             "email": user.email,
             "first_name": user.first_name,
             "last_name": user.last_name
-        }), 200)
-
-        response.set_cookie("jwt_access_token", jwt_access_token, httponly=True, secure=False, samesite="Strict")
-
-        return response
+        }), 200
 
     @staticmethod
     def validate_input(input):

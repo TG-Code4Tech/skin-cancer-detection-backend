@@ -1,6 +1,7 @@
 import re
 from app import db
 from flask import jsonify, make_response
+from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models.user import User
 from app.utils.enums import Theme
@@ -75,8 +76,12 @@ class UserService:
         db.session.add(new_user)
         db.session.commit()
 
+        # JWT erstellen
+        jwt_access_token = create_access_token(identity=str(new_user.user_id))
+
         return jsonify({
             "message": "Benutzer wurde erfolgreich registriert.", 
+            "jwt_access_token": jwt_access_token,
             "user_id": new_user.user_id,
             "username": new_user.username,
             "email": new_user.email,
