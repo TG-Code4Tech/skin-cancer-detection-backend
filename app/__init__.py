@@ -32,6 +32,7 @@ def create_app():
     from .routes.account.update_username import update_username_bp
     from .routes.account.update_email import update_email_bp
     from .routes.account.update_password import update_password_bp
+    from .routes.account.get_user_data import get_user_data_bp
 
     app.register_blueprint(register_bp)
     app.register_blueprint(login_bp)
@@ -45,5 +46,6 @@ def create_app():
     app.register_blueprint(update_username_bp)
     app.register_blueprint(update_email_bp)
     app.register_blueprint(update_password_bp)
+    app.register_blueprint(get_user_data_bp)
 
     return app

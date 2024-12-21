@@ -7,6 +7,23 @@ from app.models.user import User
 from app.utils.enums import Theme
 
 class UserService:
+    # --- Benutzerdaten abrufen ----------------------------------------------------------------------------------------
+    def get_user_data(user_id):
+        user = User.query.get(user_id)
+
+        if user is None:
+            return jsonify({"error": "Es konnte kein Benutzer gefunden werden."}), 404
+        
+        user_data = {
+            "user_id": user.user_id,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "username": user.username,
+            "email": user.email,
+            "theme": user.theme
+        }
+
+        return jsonify(user_data), 200
 
     # --- Benutzer löschen ---------------------------------------------------------------------------------------------
     @staticmethod

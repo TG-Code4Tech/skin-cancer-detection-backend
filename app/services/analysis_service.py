@@ -18,11 +18,10 @@ class AnalysisService:
     
         analyses_list = [
             {
-                "analysis_id": analysis.analysis_id,
+                "image_id": analysis.image_id,
+                "analysis_date": analysis.analysis_date,
                 "result": analysis.result,
                 "confidence_score": analysis.confidence_score,
-                "user_id": analysis.user_id,
-                "image_id": analysis.image_id,
             } for analysis in analyses
         ]
 

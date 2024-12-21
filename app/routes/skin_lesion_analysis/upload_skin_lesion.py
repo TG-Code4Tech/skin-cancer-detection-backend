@@ -8,8 +8,9 @@ upload_skin_lesion_bp = Blueprint("upload_skin_lesion", __name__)
 @jwt_required()
 def upload_skin_lesion():
     user_id = get_jwt_identity()
-    file = request.files["skin-lesion-image"]
-    response = SkinCancerDetectionService.upload_skin_lesion(user_id, file)
+    file = request.files["skin-lesion-image"]   
+    service = SkinCancerDetectionService()
+    response = service.upload_skin_lesion(user_id, file)
 
     return response
     
