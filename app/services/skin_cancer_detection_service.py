@@ -61,7 +61,7 @@ class SkinCancerDetectionService:
         db.session.add(image)
         db.session.commit()
 
-        return jsonify({"message": "Das Bild wurde erfolgreich gespeichert."}), 201
+        return jsonify({"message": "Das Bild wurde erfolgreich gespeichert.", "image_id": image.image_id}), 201
 
     # --- Prüfen, ob die Datei ein Bild ist ----------------------------------------------------------------------------
     def is_image(self, file):
