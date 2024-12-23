@@ -43,4 +43,4 @@ def save_file_in_uploads_directory(file, user_id):
     
     file.save(uploads_path)
 
-    return os.path.join("uploads", str(user_id), filename)
+    return filename
