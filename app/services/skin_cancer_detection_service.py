@@ -54,10 +54,10 @@ class SkinCancerDetectionService:
         if not self.is_image(file):
             return jsonify({"error": "Die hochgeladene Datei ist kein gültiges Bild."}), 400
 
-        image_path = save_file_in_uploads_directory(file, user_id)
+        filename = save_file_in_uploads_directory(file, user_id)
 
         image = Image(
-            image=image_path,
+            image=filename,
             user_id=user_id
         )
 
@@ -76,10 +76,12 @@ class SkinCancerDetectionService:
         if image is None:
             return jsonify({"error": "Es konnte kein Bild mit dieser ID gefunden werden."}), 404
         
-        if image.user_id != user_id:
+        if str(image.user_id) != str(user_id):            
             return jsonify({"error": "Das Bild gehört nicht dem aktuellen Benutzer."}), 403
-
-        image_path = image.image
+        
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+        uploads_dir = os.path.join(project_root, 'uploads', str(image.user_id))
+        image_path = os.path.join(uploads_dir, image.image)
 
         if not os.path.exists(image_path):
             return jsonify({"error": "Das Bild konnte auf dem Server nicht gefunden werden."}), 404
@@ -89,10 +91,10 @@ class SkinCancerDetectionService:
         if not mime_type:
             return jsonify({"error": "Der MIME-Type des Bildes konnte nicht bestimmt werden."}), 415
 
-        try: 
+        try:
             return send_file(image_path, mimetype=mime_type)
         except Exception as e:
-                return jsonify({"error": f"Fehler beim Abrufen des Bildes: {str(e)}"}), 500
+            return jsonify({"error": f"Fehler beim Abrufen des Bildes: {str(e)}"}), 500
 
     # --- Prüfen, ob die Datei ein Bild ist ----------------------------------------------------------------------------
     def is_image(self, file):
