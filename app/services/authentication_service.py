@@ -11,20 +11,32 @@ class AuthenticationService:
         is_password_valid = AuthenticationService.validate_input(password)
 
         if not is_username_or_email_valid:
-            return jsonify({"error": "Bitte einen gültigen Benutzernamen oder eine gültige E-Mail-Adresse angeben."}), 400
+            return jsonify({
+                "check": "backend_username_or_email",
+                "error": "Bitte einen gültigen Benutzernamen oder eine gültige E-Mail-Adresse angeben."
+            }), 400
 
         if not is_password_valid:
-            return jsonify({"error": "Bitte ein gültiges Passwort angeben."}), 400
+            return jsonify({
+                "check": "backend_password",
+                "error": "Bitte ein gültiges Passwort angeben."
+            }), 400
         
         # Prüfen, ob ein Benutzer mit dem Benutzernamen oder der E-Mail exisitiert
         user = User.query.filter((User.username == username_or_email) | (User.email == username_or_email)).first()
 
         if user is None:
-            return jsonify({"error": "Benutzername oder E-Mail-Adresse ist ungültig."}), 400
+            return jsonify({
+                "check": "backend_username_or_email",
+                "error": "Benutzername oder E-Mail-Adresse ist ungültig."
+            }), 400
         
         # Passwort prüfen
         if not check_password_hash(user.password, password):
-            return jsonify({"error": "Falsches Passwort."}), 400
+            return jsonify({
+                "check": "backend_password",
+                "error": "Falsches Passwort."
+            }), 400
     
         # JWT erstellen
         jwt_access_token = create_access_token(identity=str(user.user_id))

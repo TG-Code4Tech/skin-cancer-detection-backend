@@ -8,7 +8,9 @@ update_password_bp = Blueprint("update_password", __name__)
 @jwt_required()
 def update_password():
     user_id = get_jwt_identity()
+    current_password = request.form.get("current_password")
     new_password = request.form.get("password")
-    response = UserService.update_password(user_id, new_password)
+    new_password_confirmation = request.form.get("password_confirmation")
+    response = UserService.update_password(user_id, current_password, new_password, new_password_confirmation)
 
     return response
