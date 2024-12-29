@@ -1,5 +1,6 @@
 import os
 import smtplib
+from app.services.user_service import UserService
 from flask import jsonify
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -48,8 +49,34 @@ class ContactService:
 
     @staticmethod
     def redirect_matter_to_service(first_name, last_name, email, matter):
-        if not first_name or not last_name or not email or not matter:
-            return jsonify({"error": "Es konnte aufgrund von unvollständigen Angaben keine E-Mail gesendet werden."}), 404
+        is_first_name_valid = UserService.validate_input(first_name)
+        is_last_name_valid = UserService.validate_input(last_name)
+        is_email_valid, email_validation_message = UserService.validate_email(email)
+        is_matter_valid = UserService.validate_input(matter)
+
+        if not is_first_name_valid:
+            return jsonify({
+                "check": "backend_first_name",
+                "error": "Bitte einen Vornamen angeben."
+            }), 400
+        
+        if not is_last_name_valid:
+            return jsonify({
+                "check": "backend_last_name",
+                "error": "Bitte einen Nachnamen angeben."
+            }), 400
+
+        if not is_email_valid:
+            return jsonify({
+                "check": "backend_email",
+                "error": email_validation_message
+            }), 400
+        
+        if not is_matter_valid:
+            return jsonify({
+                "check": "backend_matter",
+                "error": "Bitte ein Anliegen angeben."
+            }), 400
         
         sender = os.getenv("EMAIL_ADDRESS")
         password = os.getenv("EMAIL_PASSWORD")

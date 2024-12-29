@@ -46,37 +46,65 @@ class UserService:
 
     # --- Benutzer registrieren ----------------------------------------------------------------------------------------
     @staticmethod
-    def register_user(username, email, password, first_name, last_name):
+    def register_user(username, email, password, password_confirmation, first_name, last_name):
         is_username_valid = UserService.validate_input(username)
         is_email_valid, email_validation_message = UserService.validate_email(email)
         is_password_valid, password_validation_message = UserService.validate_password(password)
+        passwords_match = UserService.check_matching_passwords(password, password_confirmation)
         is_first_name_valid = UserService.validate_input(first_name)
         is_last_name_valid = UserService.validate_input(last_name)
 
         if not is_username_valid:
-            return jsonify({"error": "Bitte einen Benutzernamen angeben."}), 400
+            return jsonify({
+                "check": "backend_username",
+                "error": "Bitte einen Benutzernamen angeben."
+            }), 400
 
         username_already_exists = User.query.filter_by(username=username).first()
 
         if username_already_exists:
-            return jsonify({"error": "Benutzername bereits vergeben."}), 400
+            return jsonify({
+                "check": "backend_username",
+                "error": "Benutzername bereits vergeben."
+            }), 400
         
         if not is_email_valid:
-            return jsonify({"error": email_validation_message}), 400
+            return jsonify({
+                "check": "backend_email",
+                "error": email_validation_message
+            }), 400
         
         email_already_exists = User.query.filter_by(email=email).first()
 
         if email_already_exists:
-            return jsonify({"error": "Email-Adresse bereits vergeben."}), 400
+            return jsonify({
+                "check": "backend_email",
+                "error": "Email-Adresse bereits vergeben."
+            }), 400
         
         if not is_password_valid:
-            return jsonify({"error": password_validation_message}), 400
+            return jsonify({
+                "check": "backend_password",
+                "error": password_validation_message
+            }), 400
+        
+        if not passwords_match:
+            return jsonify({
+                "check": "backend_password_confirmation",
+                "error": "Passwörter stimmen nicht überein."
+            }), 400
         
         if not is_first_name_valid:
-            return jsonify({"error": "Bitte einen Vornamen angeben."}), 400
+            return jsonify({
+                "check": "backend_first_name",
+                "error": "Bitte einen Vornamen angeben."
+            }), 400
         
         if not is_last_name_valid:
-            return jsonify({"error": "Bitte einen Nachnamen angeben."}), 400
+            return jsonify({
+                "check": "backend_last_name",
+                "error": "Bitte einen Nachnamen angeben."
+            }), 400
         
         # Passwort hashen
         hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
@@ -116,12 +144,18 @@ class UserService:
             return jsonify({"error": "Es konnte kein Benutzer gefunden werden."}), 404
         
         if not is_email_valid:
-            return jsonify({"error": message}), 400
+            return jsonify({
+                "check": "backend_email",
+                "error": message
+            }), 400
         
         email_already_exists = User.query.filter_by(email=email).first()
 
         if email_already_exists:
-            return jsonify({"error": "E-Mail-Adresse bereits vergeben."}), 400
+            return jsonify({
+                "check": "backend_email",
+                "error": "E-Mail-Adresse bereits vergeben."
+            }), 400
         
         user.email = email
         db.session.commit()
@@ -141,7 +175,10 @@ class UserService:
             return jsonify({"error": "Es konnte kein Benutzer gefunden werden."}), 404
         
         if not is_first_name_valid:
-            return jsonify({"error": "Kein Vorname übermittelt."}), 400
+            return jsonify({
+                "check": "backend_first_name",
+                "error": "Kein Vorname übermittelt."
+            }), 400
         
         user.first_name = first_name
         db.session.commit()
@@ -161,7 +198,10 @@ class UserService:
             return jsonify({"error": "Es konnte kein Benutzer gefunden werden."}), 404
         
         if not is_last_name_valid:
-            return jsonify({"error": "Kein Nachname übermittelt."}), 400
+            return jsonify({
+                "check": "backend_last_name",
+                "error": "Kein Nachname übermittelt."
+            }), 400
         
         user.last_name = last_name
         db.session.commit()
@@ -173,19 +213,38 @@ class UserService:
     
     # --- Passwort ändern ----------------------------------------------------------------------------------------------
     @staticmethod
-    def update_password(user_id, password):
+    def update_password(user_id, current_password, password, password_confirmation):
         user = User.query.get(user_id)
         is_password_valid, message = UserService.validate_password(password)
+        matching_passwords = UserService.check_matching_passwords(password, password_confirmation)
 
         if user is None:
             return jsonify({"error": "Es konnte kein Benutzer gefunden werden."}), 404
         
+        if not check_password_hash(user.password, current_password):
+            return jsonify({
+                "check": "backend_current_password",
+                "error": "Falsches aktuelles Passwort."
+            }), 400
+        
         if not is_password_valid:
-            return jsonify({"error": message}), 400
+            return jsonify({
+                "check": "backend_password",
+                "error": message
+            }), 400
+        
+        if not matching_passwords:
+            return jsonify({
+                "check": "backend_password_confirmation",
+                "error": "Die Passwörter stimmen nicht überein."
+            }), 400
         
         # Prüfen, ob das neue Passwort mit dem aktuellen Passwort übereinstimmt
         if check_password_hash(user.password, password):
-            return jsonify({"error": "Das neue Passwort darf nicht mit dem alten Passwort übereinstimmen."}), 400
+            return jsonify({
+                "check": "backend_password",
+                "error": "Das neue Passwort darf nicht mit dem alten Passwort übereinstimmen."
+            }), 400
         
         # Passwort hashen
         hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
@@ -321,3 +380,8 @@ class UserService:
         
         return is_valid, message
     
+    # --- Validierung der Passwortbestätigung --------------------------------------------------------------------------
+    @staticmethod
+    def check_matching_passwords(password, password_confirmation):
+        return password == password_confirmation
+        
