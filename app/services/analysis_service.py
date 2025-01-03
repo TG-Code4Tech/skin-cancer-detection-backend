@@ -30,8 +30,12 @@ class AnalysisService:
     @staticmethod
     def interpret_confidence(confidence_value):
         if confidence_value < 0.5:
-            return 1 - confidence_value
+            score = 1 - confidence_value
         elif confidence_value > 0.5:
-            return confidence_value
+            score = confidence_value
         else:
-            return confidence_value
+            score = confidence_value
+
+        percentage_score = min(round(score * 100), 99)
+
+        return percentage_score
