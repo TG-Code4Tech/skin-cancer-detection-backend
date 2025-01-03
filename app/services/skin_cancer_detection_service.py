@@ -25,7 +25,7 @@ class SkinCancerDetectionService:
         try:
             image = prepare_image(image_path)
             prediction = self.skin_cancer_detection_model.predict(image)
-            result = "malignant" if prediction[0][0] > 0.5 else "benign"
+            result = "bösartig" if prediction[0][0] > 0.5 else "gutartig"
             confidence_score = float(prediction[0][0])
 
             # Analyse in der Datenbank speichern
@@ -40,8 +40,9 @@ class SkinCancerDetectionService:
             db.session.commit()
 
             interpreted_confidence_score = AnalysisService.interpret_confidence(confidence_score)
+            recommendation = f"Ihre Hautläsion wurde von dem Modell zu {interpreted_confidence_score}% als {result} eingestuft. Bitte konsultieren Sie unabängig von der Diagnose einen Dermatologen, um eine verbindliche Aussage zu erhalten."
 
-            return jsonify({"prediction": result, "confidence": round(interpreted_confidence_score * 100) })
+            return jsonify({"prediction": result, "confidence": interpreted_confidence_score, "recommendation": recommendation})
     
         finally:
             remove_temp_directory(temp_directory)
